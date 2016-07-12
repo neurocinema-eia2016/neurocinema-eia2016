@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>webgaze overlay</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" href="images/favicon.ico">
+        <link href="css/default.css" rel="stylesheet">
+        <script src="js/jquery/dist/jquery.js"></script>
+        <script src="js/jquery-ui/jquery-ui.min.js"></script>        
+        <script src="js/raphael/raphael.js"></script>
+        <!-- style-player -->        
+        <link href="css/amalia.js.min.css" rel="stylesheet">
+        <!-- /style-player -->        
+        <!-- script-player -->        
+        <script src="js/amalia.js/amalia.js.min.js"></script>
+        <script src="js/amalia.js/amalia.js-plugin-timeline.min.js"></script>
+        <script src="js/amalia.js/amalia.js-plugin-overlay.min.js"></script>     
+        <!-- /script-player -->
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Webgaze Overlay</h1>  
+            </div>
+            <div class="content">           
+                <div class="demo">
+                    <div style="height: 350px;">
+                        <div id="defaultPlayer"></div>
+                    </div>
+                    <div id="timeline"></div>
+                    <script>
+                        $( function () {
+                            $( "#defaultPlayer" ).mediaPlayer( {
+                                autoplay : false,
+                                src : "media/Beetlejuice french scene - YouTube_360p.mp4",
+                                controlBar:
+                                {
+                                    sticky: true,
+                                    autohide: false,
+                                },
+                                plugins : {
+                                    dataServices : [
+                                        {
+                                            protocol : "http",
+                                            //url : 'json/amalia01-overlay.json',
+                                            url: 'https://neurocinema-a859d.firebaseio.com/webgaze/gazetest.json',
+                                            // format : 'json',
+                                            parameters : {
+                                                mainLevel : true
+                                            },
+                                        }
+                                    ],
+                                    list : [
+                                        {
+                                            'className' : 'fr.ina.amalia.player.plugins.OverlayPlugin',
+                                            'metadataId' : 'track-amalia01',
+                                            'parameters' : {
+                                                editable:false,
+                                                style : {
+                                                    'fill' : '#ff0000',
+                                                    'strokeWidth' : 1,
+                                                    'fillOpacity' : 1
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            } );
+                        } );
+                    </script>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
