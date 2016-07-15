@@ -40,11 +40,6 @@
     <script src="js/bootstrap.min.js"></script>
 </head>
 <body>
-    <script src="//vjs.zencdn.net/5.8/video.min.js"></script>
-    <script src="js/video.js/video.min.js"></script>
-    <script src="js/video-js/video.js"></script>
-
-    <script src="js/Youtube.min.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/clmtrackr/clm.js"></script>
     <script src="js/clmtrackr/clmtrackr.js"></script>
@@ -53,41 +48,6 @@
     <script src="js/models/d3.min.js"></script>
     <script src="js/models/emotion_classifier.js"></script>
     <script src="js/models/emotionmodel.js"></script>
-    
-
-    <!-- Navigation -->
-    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-        <div class="container">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="#">
-                    <img src="http://placehold.it/150x50&text=Logo" alt="">
-                </a>
-            </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="expressions.html" target="content">Expressions</a>
-                    </li>
-                    <li>
-                        <a href="viewer.html" target="content">Watch it!</a>
-                    </li>
-                    <li>
-                        <a href="timeline.html" target="content">Results</a>
-                    </li>
-                </ul>
-            </div>
-            <!-- /.navbar-collapse -->
-        </div>
-        <!-- /.container -->
-    </nav>
     
     <!-- Page Content -->
     <div class="text-container">
@@ -122,15 +82,6 @@
     <script src="js/index.js"></script>
     <script src="https://www.gstatic.com/firebasejs/3.1.0/firebase.js"></script>
     <script>
-        // Initialize Firebase
-        var config = {
-            apiKey: "AIzaSyBI1lAq_sWUkSyuw6_q9Tp4Xq57pTqQLUU",
-            authDomain: "neurocinema-a859d.firebaseapp.com",
-            databaseURL: "https://neurocinema-a859d.firebaseio.com",
-            storageBucket: "neurocinema-a859d.appspot.com",
-        };
-        firebase.initializeApp(config);
-
         var vid = document.getElementById('videoel');
         var video_player = document.getElementById('youtube_player');
         var video = document.querySelector("#youtube_player video");
@@ -197,16 +148,6 @@
             ctrack.start(vid);
             // start loop to draw face
             drawLoop();
-        }
-
-        function showPlayer() {
-            video_player = videojs('youtube_player');
-            document.getElementById('youtube_player').style.visibility = 'visible';
-            // load video
-            video_player.load();
-            video_player.requestFullscreen();
-            // start playing
-            video_player.play();
         }
 
         function drawLoop() {

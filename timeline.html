@@ -6,7 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="images/favicon.ico">
     <link href="css/default.css" rel="stylesheet">
-
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="css/logo-nav.css" rel="stylesheet">
+    <link href="css/content.css" rel="stylesheet">
+    
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="js/jquery/dist/jquery.js"></script>
     <script src="js/jquery-ui/jquery-ui.min.js"></script>        
@@ -19,49 +24,9 @@
     <script src="js/amalia.js/amalia.js-plugin-timeline.min.js"></script>
     <script type="text/javascript" src="js/amalia.js-yt-player.min.js"></script>
     <!-- /script-player -->
-
-    <!-- Bootstrap Core CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="css/logo-nav.css" rel="stylesheet">
-    <link href="css/content.css" rel="stylesheet">
-
+    <script src="js/utils.js"></script>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-        <div class="container">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="#">
-                    <img src="http://placehold.it/150x50&text=Logo" alt="">
-                </a>
-            </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="expressions.html" target="content">Expressions</a>
-                    </li>
-                    <li>
-                        <a href="viewer.html" target="content">Watch it!</a>
-                    </li>
-                    <li>
-                        <a href="timeline.html" target="content">Results</a>
-                    </li>
-                </ul>
-            </div>
-            <!-- /.navbar-collapse -->
-        </div>
-        <!-- /.container -->
-    </nav>
-    
     <!-- Page Content -->
     <div class="text-container">
         <div class="row">
@@ -80,54 +45,61 @@
                 </div>
                 <div id="timeline"></div>
                 <script>
+                    var titles = ['Angry face', 'Happy face', 'Sad face', 'Surprised face']
+                    var metas = ['angry', 'happy', 'sad', 'surprised']
+                    //var colors = ['#ff1f1f', '#fe81cf', '#416fff', '#eeff3b']
+                    var colors = ['#ff1f', '#fe81', '#416f', '#eeff']
+                    var datapath = 'https://neurocinema-a859d.firebaseio.com/emotions/';
+                    // guess the viewer id from cookies
+                    var viwerpath = getCookie("viwer_id");
+                    var nb_view = getCookie("nb_view");
+                    if (viwerpath == "") {
+                        var today = new Date().toISOString();
+                        setCookie("viwer_id", today, 30);
+                        setCookie("nb_view", "1", 30);
+                    }
+                    nb_view = parseInt(nb_view);
+                    var viewerpath = viwerpath.replaceAll(':','')
+                    viewerpath = viewerpath.replaceAll('-','').replace('.','')
+                    var path = datapath + viewerpath
+
+                    // aggregate data across views
+                    var data_list = [];
+                    var line_list = [];
+                    var emo_list = ['angry/', 'happy/', 'sad/', 'surprised/']
+                    for (var iview = 0;iview < nb_view; iview++) {
+                        for (var i = 0; i < 4; i++) {
+                            view_id = String(iview).pad(3)
+                            data_list.push(path + '/' + emo_list[i] + view_id + '.json');
+                            line_list.push({
+                                title : titles[i] + ' (' + view_id + ')',
+                                type : 'segment',
+                                metadataId : metas[i] + view_id,
+                                color : colors[i]
+                            });
+                        }
+                    }
+                    console.log(data_list)
+                    console.log(line_list)
+
                     $( function () {
                         $( "#defaultPlayer" ).mediaPlayer( {
-                            player: "fr.ina.amalia.player.YtPlayer",
+                            //player: "fr.ina.amalia.player.YtPlayer",
                             autoplay : false,
-                            //src : "media/Beetlejuice french scene - YouTube_360p.mp4",
-                            src: 'M7lc1UVf-VE', // Youtube video ID
+                            src : "media/Beetlejuice french scene - YouTube_360p.mp4",
+                            //src: 'M7lc1UVf-VE', // Youtube video ID
                             controlBar :
                                 {
                                     sticky : true
                                 },
                             plugins : {
-                                dataServices : [
-                                    'https://neurocinema-a859d.firebaseio.com/emotion/20160713T131620223Z/angry.json',
-                                    'https://neurocinema-a859d.firebaseio.com/emotion/20160713T131620223Z/happy.json',
-                                    'https://neurocinema-a859d.firebaseio.com/emotion/20160713T131620223Z/sad.json',
-                                    'https://neurocinema-a859d.firebaseio.com/emotion/20160713T131620223Z/surprised.json'
-                                ],
+                                dataServices : data_list,
                                 list : [
                                     {
                                         'className' : 'fr.ina.amalia.player.plugins.TimelinePlugin',
                                         'container' : '#timeline',
                                         'parameters' : {
-                                            listOfLines : [
-                                                {
-                                                    title : 'Angry face',
-                                                    type : 'segment',
-                                                    metadataId : 'angy',
-                                                    color : '#F00'
-                                                },
-                                                {
-                                                    title : 'Happy face',
-                                                    type : 'segment',
-                                                    metadataId : 'happy',
-                                                    color : '#FF0'
-                                                },
-                                                {
-                                                    title : 'Sad face',
-                                                    type : 'segment',
-                                                    metadataId : 'sad',
-                                                    color : '#4A0'
-                                                },
-                                                {
-                                                    title : 'Surprised face',
-                                                    type : 'segment',
-                                                    metadataId : 'surprised',
-                                                    color : '#340'
-                                                }
-                                            ]
+                                            listOfLines : line_list
                                         }
                                     }
                                 ]
