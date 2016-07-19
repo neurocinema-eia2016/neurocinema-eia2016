@@ -37,14 +37,6 @@
 <body>
     <link href="css/default.css" rel="stylesheet">
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="js/jquery/dist/jquery.js"></script>
-    <script src="js/jquery-ui/jquery-ui.min.js"></script>        
-    <script src="js/raphael/raphael.js"></script>
-    <!-- style-player -->        
-    <link href="css/amalia.js.min.css" rel="stylesheet">
-    <!-- /style-player -->        
-    <!-- script-player -->        
-    <script src="js/amalia.js/amalia.js.min.js"></script>
 
     <script src="js/utils.js"></script>
     <script src="js/clmtrackr/clm.js"></script>
@@ -57,45 +49,48 @@
 
     <script src="https://www.gstatic.com/firebasejs/3.1.0/firebase.js"></script>
 
-    <div id="player"></div>
+    <div id="player" class="row" margin-left="15px" margin-right="15px"></div>
 
     <div id="container" hidden>
         <video id="videoel" width="400" height="300" preload="auto" loop></video>
         <canvas id="overlay" width="400" height="300"></canvas>
     </div>
 
-    <script>    
-        // Initialize Amalia.js Player
+    <script>
+        // 1. Get the video id 
+        var videoId = sessionStorage.getItem("youtube-link")
+        // 2. This code loads the IFrame Player API code asynchronously.
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        // 3. This function creates an <iframe> (and YouTube player)
+        //    after the API code downloads.
         var player = null;
-        var curtime = null
-        // 2. Function to execute when the DOM is fully loaded
-        $(document).ready(function () {
-            // 3. Init player with default parameters
-            $("#player").mediaPlayer({
-                src: "media/Beetlejuice french scene - YouTube_360p.mp4",
-                autoplay: false,
-                callbacks: {
-                    onReady: 'onReady'
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '340',
+                width: '560',
+                videoId: videoId, //'M7lc1UVf-VE',
+                events: {
+                    'onReady': onPlayerReady
                 }
             });
-        });
-
+        }
+        
         // 4. The API will call this function when the video player is ready.
-        function onReady() {
-            player = $('#player').data('fr.ina.amalia.player').getPlayer();
-            // start video
-            vid.play();
-            // start tracking
-            ctrack.start(vid);
-            // start loop to draw face
-            detectEmotionLoop();
+        function onPlayerReady(event) {
+            event.target.playVideo();
+            // write video title in firebase
+            var vidId = videoId.replaceAll('-','')
+            firebase.database().ref('/youtube/' + vidId + '/video').set({
+                title: player.getVideoData().title
+            });
+            drawLoop();
         }
 
-        // 5. Function will call on click to button play
-        function playVideo() {
-            if (player !== null) {
-                player.play();
-            }
+        function stopVideo() {
+            player.stopVideo();
         }
 
         // Initialize Firebase
@@ -155,11 +150,14 @@
             setCookie("nb_view", parseInt(nb_view) + 1, 30);
         }
 
-        var day = parseInt(viewer_id.replaceAll('-','').split('T')[0])
-        var data = 'emotions'
-        var path = data + '/' + viewer_id.replaceAll(':','')
+        // build path from viewer_id
+        var day = parseInt(viewer_id.replaceAll('-','').split('T')[0]);
+        //var data = 'emotions'
+        var root = 'https://neurocinema-a859d.firebaseio.com/'
+        var path = 'youtube/' + videoId + '/' + viewer_id.replaceAll(':','')
         path = path.replaceAll('-','').replace('.','')
-        var ref = firebase.database().ref(path + '/');
+        var ref = firebase.database().ref(path);
+
         /*********** setup of emotion detection *************/
         var last = ""; //["", "", "", ""];
         var timestamp = ""; //["", "", "", ""];
@@ -170,7 +168,8 @@
 
         for (var i = 0;i < enames.length; i++) {
             enames[i] = enames[i] + '/' + String(nb_view).pad(3)
-            // init firebase
+            console.log('setting ' + path + '/' + enames[i])
+            // send a new data structure into firebase 
             firebase.database().ref(path + '/' + enames[i]).set({
                 localisation: [{
                     sublocalisations: {
@@ -225,20 +224,21 @@
             }
         }
 
-        function detectEmotionLoop() {
-            requestAnimFrame(detectEmotionLoop);
+        function drawLoop() {
+            requestAnimFrame(drawLoop);
             var cp = ctrack.getCurrentParameters();
             var er = ec.meanPredict(cp);
+            // get the current video timestamp
             if (player !== null) {
                 curtime = player.getCurrentTime();
             } else {
                 curtime = 0;
             }
             if (er) {
-                //console.log(enames[0] + ': ' + er[0].value + ' at ' + curtime)
+                console.log(er[0].value)
                 for (var i = 0;i < er.length;i++) {
                     if (er[i].value > 0.8) {
-                        //console.log(enames[i] + ': ' + er[i].value)
+                        console.log(enames[i] + ': ' + er[i].value)
                         var minnow = String(curtime / 60).split('.')[0].pad(2);
                         var secnow = String(curtime).split('.')[0].pad(2);
                         var msnow = String(String(curtime).split('.')[1]).substr(0,4)
